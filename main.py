@@ -148,7 +148,7 @@ if __name__ == '__main__':
             set_global_llm(api_key=args.openai_api_key, base_url=args.openai_api_base, model=args.model_name, lang=args.language)
         else:
             logger.info("Using Local LLM as global LLM.")
-            set_global_llm(lang=args.language)
+            set_global_llm(model="Qwen/Qwen2.5-3B-Instruct-GGUF", model_path="qwen2.5-3b-instruct.Q4_K_M.gguf", lang=args.language)
     print(papers)
     # Prepare interests for render_email
     interests = [interest.strip() for interest in args.retriever_target.split('\n') if interest.strip()]
