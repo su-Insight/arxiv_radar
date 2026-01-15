@@ -1,21 +1,28 @@
+import logging
+import time
+from typing import Optional
+from llama_cpp import Llama
+from openai import OpenAI
+
+logger = logging.getLogger(__name__)
+
 GLOBAL_LLM = None
 
 class LLM:
-    def __init__(self, model_name: str, 
+    def __init__(self, model: str, 
                 api_key: str = None, base_url: str = None, 
                 model_path: str = None, n_ctx: int = 5000, n_threads: int = 4, verbose: bool = False,
                 lang:str = "English"):
-        if not api_key:
+        if api_key:
             self.llm = OpenAI(api_key=api_key, base_url=base_url)
-        
-
-        self.llm = Llama.from_pretrained(
-            repo_id=model_name,
-            filename=model_path,
-            n_ctx=n_ctx,
-            n_threads=n_threads,
-            verbose=verbose,
-        )
+        else:
+            self.llm = Llama.from_pretrained(
+                repo_id=model,
+                filename=model_path,
+                n_ctx=n_ctx,
+                n_threads=n_threads,
+                verbose=verbose,
+            )
 
         self.model = model
         self.lang = lang
@@ -47,4 +54,31 @@ def get_llm() -> LLM:
         logger.info("No global LLM found, creating a default one. Use `set_global_llm` to set a custom one.")
         set_global_llm()
     return GLOBAL_LLM
+
+
+def destroy_global_llm() -> None:
+    """
+    销毁全局LLM实例，释放内存空间
+    """
+    global GLOBAL_LLM
+    if GLOBAL_LLM is not None:
+        logger.info(f"Destroying LLM instance: {GLOBAL_LLM.model}")
+        # 释放Llama模型资源
+        if hasattr(GLOBAL_LLM, 'llm'):
+            if isinstance(GLOBAL_LLM.llm, Llama):
+                # 对于Llama本地模型，尝试调用释放资源的方法
+                try:
+                    # llama_cpp的Llama实例没有显式的close方法，但可以通过删除实例来释放资源
+                    del GLOBAL_LLM.llm
+                    logger.info("Llama model resources released")
+                except Exception as e:
+                    logger.error(f"Failed to release Llama model resources: {e}")
+            # 对于OpenAI API客户端，不需要显式释放资源
+        
+        # 删除全局LLM实例
+        del GLOBAL_LLM
+        GLOBAL_LLM = None
+        logger.info("Global LLM instance destroyed")
+    else:
+        logger.info("No global LLM instance to destroy")
 
