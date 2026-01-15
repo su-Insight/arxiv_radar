@@ -1,180 +1,84 @@
-# ArXiv Radar
+## 🧪 调试与测试
 
-ArXiv Radar是一个自动化工具，用于每日从ArXiv检索最新论文，使用本地LLM解析摘要，计算与用户定义关键字的相似度，并将最相关的前K篇论文通过邮件发送给用户。
+### 测试工作流
+我们提供了一个专门的 **Test-Workflow Action**，用于快速测试配置是否正确：
+- 无论日期如何，始终检索5篇ArXiv论文
+- 适合调试配置和查看邮件格式
+- 不影响日常自动运行的主工作流
 
-## 功能特点
+### 主工作流
+- **自动触发**：每天自动运行，检索前一天发布的新论文
+- **运行时间**：默认在UTC时间22:00执行
+- **自定义时间**：可通过编辑 `.github/workflows/main.yml` 文件修改运行时间
+- **周末和节假日**：这些时间段ArXiv通常不发布新论文，可能会在日志中看到"未找到新论文"的提示
 
-- 📚 **每日更新**：自动从ArXiv获取过去24小时内的最新论文
-- 🔍 **智能检索**：支持多关键字/短语检索，可选择ArXiv分类
-- 🧠 **本地LLM**：使用本地部署的LLM解析和理解论文摘要，保护隐私
-- ⚡ **相似度计算**：基于余弦相似度算法筛选最相关的论文
-- 📧 **邮件推送**：将筛选后的论文列表发送到指定邮箱
-- ⏰ **定时执行**：可配置的每日执行时间
-- 📁 **轻量级设计**：仅包含4个核心文件，易于部署和使用
+## 💻 本地运行
 
-## 项目结构
-
-```
-arxiv_radar/
-├── main.py          # 主程序文件，包含所有核心逻辑
-├── config.py        # 配置文件，管理所有参数
-├── requirements.txt # 依赖库列表
-├── README.md        # 项目说明文档
-└── arxiv_radar.log  # 运行日志（自动生成）
-```
-
-## 安装步骤
-
-### 1. 环境要求
-
-- Python 3.7+
-- 足够的磁盘空间（用于存储LLM模型，约100MB-2GB，取决于模型大小）
-
-### 2. 安装依赖
+如果您希望在本地运行此工具，可以使用uv包管理器（推荐）：
 
 ```bash
-# 安装项目依赖
-pip install -r requirements.txt
+# 设置环境变量
+export ARXIV_QUERY=cs.AI+cs.CV+cs.LG
+export SMTP_SERVER=smtp.example.com
+# ... 设置其他必要的环境变量
+
+# 运行项目
+cd arxiv_radar
+uv run main.py
 ```
 
-## 配置说明
+> ⚠️ **注意**：其他包管理器（如pip或conda）未经过全面测试，可能存在潜在问题。虽然项目包含pyproject.toml文件，但建议优先使用uv以获得最佳体验。
 
-编辑`config.py`文件，设置以下关键参数：
+## 📦 LLM资源需求
 
-### 1. 核心配置
+- 系统将自动下载并运行 **Qwen2.5-3B** 模型（约3GB大小）
+- 请确保您的网络连接稳定，能够下载该模型
+- 硬件需满足模型运行需求（至少8GB内存）
 
-```python
-# 搜索关键字列表（必填）
-keywords = ["machine learning", "artificial intelligence", "deep learning"]
+## 🔄 保持同步
 
-# ArXiv分类筛选（可选，留空表示不限制）
-# 常用分类示例：cs.AI, cs.CL, cs.CV, cs.LG, stat.ML
-arxiv_categories = []
+项目处于**活跃开发**状态，建议您：
+1. **Watch** 此仓库以获取最新发布通知
+2. 定期更新您的fork仓库以享受新功能和bug修复
 
-# 每次最多获取的论文数量
-max_papers = 100
+## 🧠 工作原理
 
-# 发送前K篇最相关论文
-top_k = 10
-```
+ArXiv Radar的工作流程分为以下几个步骤：
 
-### 2. LLM模型配置
+1. **数据收集**：从ArXiv检索最新论文
+2. **兴趣匹配**：使用本地LLM分析论文摘要与您定义兴趣的相关性
+3. **排序**：根据相关性分数对论文进行排序
+4. **摘要生成**：使用轻量级LLM为每篇论文生成TL;DR
+5. **邮件发送**：将排序后的论文列表发送到您的邮箱
 
-```python
-# 本地LLM模型名称或路径
-# 推荐模型：
-# - 小型模型（适合低配置设备）: all-MiniLM-L6-v2, distilbert-base-nli-stsb-mean-tokens
-# - 中型模型: all-mpnet-base-v2
-# - 大型模型: all-roberta-large-v1
-llm_model = "all-MiniLM-L6-v2"
-```
+## ⚠️ 已知限制
 
-### 3. 邮件发送配置
+1. **推荐算法**：当前的相关性计算基于简单的相似度算法，可能无法完全准确地反映您的兴趣偏好
+2. **执行时间**：在GitHub Actions上部署LLM并为每篇论文生成摘要需要一定时间（约70秒/篇）
+3. **资源限制**：GitHub Actions有执行时间限制（公共仓库每执行6小时，每月2000分钟），过高的MAX_PAPER_NUM可能导致超出限制
 
-```python
-# 发件人邮箱
-email_sender = "your_email@example.com"
+## 🤝 贡献指南
 
-# 收件人邮箱（可以与发件人相同）
-email_receiver = "your_email@example.com"
+欢迎提交Issue和Pull Request！我们鼓励：
+- 改进推荐算法
+- 添加新功能
+- 修复bug
+- 优化文档
 
-# SMTP服务器设置
-smtp_server = "smtp.example.com"
-smtp_port = 587
-smtp_tls = True  # 是否使用TLS加密
+> 💡 **提示**：所有Pull Request请合并到dev分支
 
-# SMTP登录凭据（如果需要）
-smtp_username = "your_email@example.com"
-smtp_password = "your_email_password"
-```
+## 📄 许可证
 
-### 4. 调度配置
+项目采用 **MIT许可证** 分发，详情请参阅[LICENSE](LICENSE)文件。
 
-```python
-# 每日执行时间（24小时制）
-schedule_time = "09:00"
-```
+## 🙏 致谢
 
-## 运行方式
-
-### 单次运行
-
-```bash
-python main.py
-```
-
-### 后台持续运行
-
-```bash
-# Linux/Mac
-nohup python main.py > output.log 2>&1 &
-
-# Windows（使用PowerShell）
-Start-Process python -ArgumentList "main.py" -WindowStyle Hidden
-```
-
-## 常见问题
-
-### 1. 无法连接到SMTP服务器
-
-**解决方案**：
-- 检查SMTP服务器地址和端口是否正确
-- 确认是否启用了TLS/SSL加密
-- 验证邮箱用户名和密码是否正确
-- 对于Gmail用户，需要启用"不太安全的应用访问"或使用应用专用密码
-
-### 2. 模型加载失败
-
-**解决方案**：
-- 检查网络连接，确保能够下载模型
-- 尝试使用更小的模型（如all-MiniLM-L6-v2）
-- 手动下载模型并指定本地路径
-
-### 3. 没有找到相关论文
-
-**解决方案**：
-- 检查关键字是否正确，尝试使用更广泛的关键字
-- 减少ArXiv分类限制
-- 增加max_papers参数值
-
-### 4. 运行速度慢
-
-**解决方案**：
-- 使用更小的LLM模型
-- 减少max_papers参数值
-- 考虑在有GPU的环境中运行（sentence-transformers支持GPU加速）
-
-## 技术栈
-
-- **Python 3.7+**：主要开发语言
-- **arxiv**：ArXiv API客户端
-- **sentence-transformers**：本地LLM和文本嵌入生成
-- **scikit-learn**：相似度计算
-- **schedule**：定时任务调度
-- **smtplib**：邮件发送
-
-## 扩展建议
-
-- 添加论文PDF自动下载功能
-- 支持更多学术论文来源（如IEEE Xplore、ACM Digital Library等）
-- 实现Web界面用于配置管理
-- 添加论文分类和主题聚类功能
-- 支持多用户配置
-
-## 许可证
-
-MIT License
-
-## 贡献
-
-欢迎提交Issue和Pull Request！
-
-## 更新日志
-
-### v1.0.0 (2024-01-15)
-- 初始版本发布
-- 实现核心功能：ArXiv检索、本地LLM解析、相似度计算、邮件发送和定时调度
+感谢以下项目和工具的支持：
+- [arxiv](https://github.com/lukasschwab/arxiv.py) - ArXiv API客户端
+- [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) - 本地LLM支持
+- [sentence-transformers](https://github.com/UKPLab/sentence-transformers) - 文本嵌入生成
+- [GitHub Actions](https://github.com/features/actions) - 自动化工作流支持
 
 ---
 
-**注意**：首次运行时，程序会自动下载指定的LLM模型到本地`./models`目录，请确保网络连接正常。
+**开始使用ArXiv Radar，让最新的研究成果自动找到您！** 🚀

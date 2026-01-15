@@ -120,7 +120,7 @@ def get_block_html(title:str, authors:str, rate:str, score:float,arxiv_id:str, a
         for interest in high_score_interests:
             interest_tags += f'<span style="display: inline-block; background-color: #4CAF50; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-left: 8px;">{interest}</span>'
     
-    block_template = """
+    block_template = f"""
     <div class="paper-block">
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 8px; padding: 16px; background-color: #f9f9f9;">
     <tr>
@@ -160,7 +160,8 @@ def get_block_html(title:str, authors:str, rate:str, score:float,arxiv_id:str, a
 </table>
     </div>
 """
-    return block_template.format(title=title, authors=authors,rate=rate, score=score, arxiv_id=arxiv_id, abstract=abstract, pdf_url=pdf_url, code=code, affiliations=affiliations, high_score_interests=high_score_interests)
+    # return block_template.format(title=title, authors=authors,rate=rate, score=score, arxiv_id=arxiv_id, abstract=abstract, pdf_url=pdf_url, code=code, affiliations=affiliations, high_score_interests=high_score_interests)
+    return block_template
 
 def get_stars(score:float):
     # Convert percentage score to original scale (divide by 10)
