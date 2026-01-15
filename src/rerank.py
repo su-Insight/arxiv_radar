@@ -4,7 +4,7 @@ from .llm import LLM, set_global_llm
 import time
 from loguru import logger
 
-def rerank_paper(papers: List[ArxivPaper], retriever_target: str, model: str = "TheBloke/Llama-3.2-3B-Instruct-GGUF", model_url: str = "llama-3.2-3b-instruct.Q4_K_M.gguf") -> List[ArxivPaper]:
+def rerank_paper(papers: List[ArxivPaper], retriever_target: str, model: str = "bartowski/Llama-3.2-3B-Instruct-GGUF", model_url: str = "Llama-3.2-3B-Instruct-Q4_K_M.gguf") -> List[ArxivPaper]:
     """
     使用Llama-3.2-3B-Instruct模型对论文进行语义排序
     
