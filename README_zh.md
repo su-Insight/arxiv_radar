@@ -186,7 +186,7 @@ uv run main.py
 
 ## 📝 许可证
 
-本项目基于 [MIT License](https://github.com/yourusername/arxiv_radar/blob/main/LICENSE) 协议。
+本项目基于 [Apache-2.0 license](https://github.com/su-Insight/arxiv_radar/blob/main/LICENSE) 协议。
 
 ## 🙏 致谢
 
