@@ -74,18 +74,21 @@ def calculate_paper_score(paper: ArxivPaper, interests: List[str]) -> float:
     Paper Title: Attention Is All You Need
     Paper Abstract: The dominant sequence transduction models are based on complex recurrent or convolutional neural networks...
     Score: 95
+    Output: 95
     
     Example 2:
     Interest: Computer Vision
     Paper Title: Attention Is All You Need
     Paper Abstract: The dominant sequence transduction models are based on complex recurrent or convolutional neural networks...
     Score: 70
+    Output: 70
     
     Example 3:
     Interest: Quantum Computing
     Paper Title: Attention Is All You Need
     Paper Abstract: The dominant sequence transduction models are based on complex recurrent or convolutional neural networks...
     Score: 20
+    Output: 20
     """
     
     # 为每个感兴趣的方向单独打分
@@ -100,6 +103,13 @@ def calculate_paper_score(paper: ArxivPaper, interests: List[str]) -> float:
         Paper Title: {paper.title}
         Paper Abstract: {paper.summary}
         Score:
+
+        # Constraints (STRICT)
+        1. Score range: 0 to 100.
+        2. Output ONLY the raw Arabic numerals.
+        3. DO NOT output "Score:", "The score is", or any punctuation.
+        4. DO NOT provide any explanation, reasoning, or preamble.
+        5. Any character other than 0-9 will result in task failure.
         """
         
         try:
