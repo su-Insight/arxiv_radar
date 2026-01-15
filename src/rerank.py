@@ -54,82 +54,66 @@ def rerank_paper(papers: List[ArxivPaper], retriever_target: str, model: str = "
 
 
 def calculate_paper_score(paper: ArxivPaper, interests: List[str]) -> float:
-    """
-    计算论文与感兴趣方向的相关性分数
-    
-    Args:
-        paper: 论文对象
-        interests: 感兴趣的方向列表
-    
-    Returns:
-        最高相关性分数（0-100）
-    """
     from .llm import get_llm
     llm = get_llm()
-    
-    # 少样本提示示例
-    few_shot_examples = """
-    Example 1:
-    Interest: Machine Learning
-    Paper Title: Attention Is All You Need
-    Paper Abstract: The dominant sequence transduction models are based on complex recurrent or convolutional neural networks...
-    Score: 95
-    Output: 95
-    
-    Example 2:
-    Interest: Computer Vision
-    Paper Title: Attention Is All You Need
-    Paper Abstract: The dominant sequence transduction models are based on complex recurrent or convolutional neural networks...
-    Score: 70
-    Output: 70
-    
-    Example 3:
-    Interest: Quantum Computing
-    Paper Title: Attention Is All You Need
-    Paper Abstract: The dominant sequence transduction models are based on complex recurrent or convolutional neural networks...
-    Score: 20
-    Output: 20
-    """
-    
-    # 为每个感兴趣的方向单独打分
-    scores = []
-    for interest in interests:
-        prompt = f"""
-        You are an expert in academic paper analysis. Your task is to score the relevance of a paper to a specific research interest on a scale of 0 to 100, where 100 is extremely relevant and 0 is completely irrelevant.
-        
-        {few_shot_examples}
-        
-        Interest: {interest}
-        Paper Title: {paper.title}
-        Paper Abstract: {paper.summary}
-        Score:
 
-        # Constraints (STRICT)
-        1. Score range: 0 to 100.
-        2. Output ONLY the raw Arabic numerals.
-        3. DO NOT output "Score:", "The score is", or any punctuation.
-        4. DO NOT provide any explanation, reasoning, or preamble.
-        5. Any character other than 0-9 will result in task failure.
-        """
-        
-        try:
-            response = llm.generate([
-                {"role": "system", "content": "You are an expert in academic paper analysis."},
-                {"role": "user", "content": prompt}
-            ])
-            
-            # 解析分数
-            score = float(response.strip())
-            scores.append(score)
-            logger.debug(f"  Interest: {interest}, Score: {score}")
-        except Exception as e:
-            logger.error(f"Failed to calculate score for interest '{interest}': {e}")
-            scores.append(0)
+    # 1. 定义 Few-Shot 例子
+    # 这里的例子要涵盖：极其相关、中等相关、完全不相关三种情况
+    few_shot_context = """
+### Examples:
+User Interests: ["LLM", "Software Testing"]
+
+Example 1 (Highly Relevant):
+Title: "Unit Test Generation using Large Language Models"
+Abstract: "This paper investigates the effectiveness of using Large Language Models (LLMs) like GPT-4 to automate unit test generation for Java projects. We evaluate the syntactic correctness and coverage of the generated tests compared to traditional search-based software testing (SBST) techniques."
+Output: {"LLM": 95, "Software Testing": 98}
+
+Example 2 (Partially Relevant):
+Title: "Auto-GPT: An Autonomous GPT-4 Experiment for Business Automation"
+Abstract: "We present an open-source experiment to make GPT-4 fully autonomous. By chaining LLM "thoughts", the system can independently achieve goals like market research and code debugging. We analyze the reliability and safety challenges in these autonomous loops."
+Output: {"LLM": 92, "Software Testing": 40,}
+
+Example 3 (Irrelevant):
+Title: "Quantum Approximate Optimization Algorithms for Graph Coloring"
+Abstract: "We propose a hybrid quantum-classical algorithm for the graph coloring problem. By utilizing QAOA on a 50-qubit processor, we demonstrate a speedup in finding optimal colorings for sparse graphs."
+Output: {"LLM": 5, "Software Testing": 0}
+"""
+
+    # 2. 构造当前的任务 Prompt
+    # 将你的 Interests 列表转为 JSON 字符串
+    target_interests = json.dumps(interests)
     
-    # 返回最高分
-    if scores:
-        max_score = max(scores)
-        logger.debug(f"  Maximum score: {max_score}")
-        return max_score
-    else:
-        return 0
+    prompt = f"""
+{few_shot_context}
+
+### Current Task:
+User Interests: {target_interests}
+Paper Title: {paper.title}
+Paper Abstract: {paper.summary[:1200]}
+
+### Requirement:
+- Return ONLY the JSON object.
+- Scores must be integers between 0 and 100.
+- No explanation.
+
+Output:"""
+
+    try:
+        response = llm.generate([
+            {"role": "system", "content": "You are a research assistant that evaluates paper relevance in JSON format."},
+            {"role": "user", "content": prompt}
+        ])
+
+        # 3. 稳健的 JSON 提取
+        import re
+        match = re.search(r'\{.*\}', response, re.DOTALL)
+        if match:
+            scores_dict = json.loads(match.group())
+            # 取所有兴趣中的最大值
+            return float(max(scores_dict.values())) if scores_dict else 0.0
+            
+    except Exception as e:
+        logger.error(f"Few-shot scoring failed: {e}")
+        return 0.0
+    
+    return 0.0
