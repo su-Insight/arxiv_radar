@@ -111,8 +111,15 @@ def get_empty_html():
   """
   return block_template
 
-def get_block_html(title:str, authors:str, rate:str, score:float,arxiv_id:str, abstract:str, pdf_url:str, code_url:str=None, affiliations:str=None):
+def get_block_html(title:str, authors:str, rate:str, score:float,arxiv_id:str, abstract:str, pdf_url:str, code_url:str=None, affiliations:str=None, high_score_interests:list=None):
     code = f'<a href="{code_url}" style="display: inline-block; text-decoration: none; font-size: 14px; font-weight: bold; color: #fff; background-color: #5bc0de; padding: 8px 16px; border-radius: 4px; margin-left: 8px;">Code</a>' if code_url else ''
+    
+    # 生成多个interest标签
+    interest_tags = ''
+    if high_score_interests and isinstance(high_score_interests, list):
+        for interest in high_score_interests:
+            interest_tags += f'<span style="display: inline-block; background-color: #4CAF50; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-left: 8px;">{interest}</span>'
+    
     block_template = """
     <div class="paper-block">
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 8px; padding: 16px; background-color: #f9f9f9;">
@@ -130,7 +137,7 @@ def get_block_html(title:str, authors:str, rate:str, score:float,arxiv_id:str, a
     </tr>
     <tr>
         <td style="font-size: 14px; color: #333; padding: 8px 0;">
-            <strong>Relevance:</strong> {rate} <span style="font-size: 12px; color: #888;">({score:.1f}/100)</span>
+            <strong>Relevance:</strong> {rate} <span style="font-size: 12px; color: #888;">({score:.1f}/100)</span>{interest_tags}
         </td>
     </tr>
     <tr>
@@ -153,7 +160,7 @@ def get_block_html(title:str, authors:str, rate:str, score:float,arxiv_id:str, a
 </table>
     </div>
 """
-    return block_template.format(title=title, authors=authors,rate=rate, score=score, arxiv_id=arxiv_id, abstract=abstract, pdf_url=pdf_url, code=code, affiliations=affiliations)
+    return block_template.format(title=title, authors=authors,rate=rate, score=score, arxiv_id=arxiv_id, abstract=abstract, pdf_url=pdf_url, code=code, affiliations=affiliations, high_score_interests=high_score_interests)
 
 def get_stars(score:float):
     # Convert percentage score to original scale (divide by 10)
@@ -218,7 +225,7 @@ def render_email(papers:list[ArxivPaper], interests:list[str]=None):
                 domain_class = domain.replace(' ', '_').replace('-', '_')
                 domain_classes += f' domain-{domain_class}'
         
-        parts.append(get_block_html(p.title, authors, rate, p.score, p.arxiv_id, p.tldr, p.pdf_url, p.code_url, affiliations))
+        parts.append(get_block_html(p.title, authors, rate, p.score, p.arxiv_id, p.tldr, p.pdf_url, p.code_url, affiliations, p.high_score_interests))
         time.sleep(10)
 
     content = '<br>' + '</br><br>'.join(parts) + '</br>'

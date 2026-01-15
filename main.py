@@ -112,6 +112,22 @@ if __name__ == '__main__':
     parser.add_argument('--debug', action='store_true', help='Debug mode')
     args = parser.parse_args()
 
+    html = """
+        <html>
+        <body>
+            <h2>测试邮件</h2>
+            <p>这是一封测试邮件，用于验证ArXiv Radar的邮件发送功能是否正常工作。</p>
+            <p>如果您收到这封邮件，说明邮件发送功能已配置成功！</p>
+            <br>
+            <p>Best regards,<br>ArXiv Radar Team</p>
+        </body>
+        </html>
+        """
+    send_email(args.sender, args.receiver, args.sender_password, args.smtp_server, args.smtp_port, html)
+
+    exit(0)
+
+
     assert (
         not args.use_llm_api or args.openai_api_key is not None
     )  # If use_llm_api is True, openai_api_key must be provided

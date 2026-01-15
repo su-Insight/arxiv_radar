@@ -22,9 +22,9 @@ def test_send_email():
     测试邮件发送功能
     """
     # 配置参数
-    sender = "xx@qq.com"          # 发件人邮箱
-    receiver = "xx@qq.com"        # 收件人邮箱
-    password = "xxxxxx"           # 发件人邮箱密码或授权码
+    sender = "2784397857@qq.com"          # 发件人邮箱
+    receiver = "2247493879@qq.com"        # 收件人邮箱
+    password = ""           # 发件人邮箱密码或授权码
     smtp_server = "smtp.qq.com"           # SMTP服务器地址
     smtp_port = 465                             # SMTP服务器端口
     

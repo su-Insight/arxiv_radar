@@ -54,6 +54,24 @@ def rerank_paper(papers: List[ArxivPaper], retriever_target: str, model: str = "
     return sorted_papers
 
 
+def truncate_interest(interest: str, max_length: int = 7) -> str:
+    """
+    截断interest文本，超过max_length长度的中间部分用省略号替换
+    
+    Args:
+        interest: 要截断的interest文本
+        max_length: 最大文本长度
+        
+    Returns:
+        截断后的interest文本
+    """
+    if len(interest) <= max_length:
+        return interest
+    
+    # 保留前3个和后3个字符，中间用中文省略号替换
+    return interest[:3] + "…" + interest[-3:]
+
+
 def calculate_paper_score(paper: ArxivPaper, interests: List[str]) -> float:
     from .llm import get_llm
     llm = get_llm()
@@ -110,11 +128,27 @@ Output: {"LLM": 5, "Software Testing": 0}
         match = re.search(r'\{.*\}', response, re.DOTALL)
         if match:
             scores_dict = json.loads(match.group())
-            # 取所有兴趣中的最大值
-            return float(max(scores_dict.values())) if scores_dict else 0.0
+            
+            # 更新paper对象的interest_scores属性
+            paper.interest_scores = scores_dict
+            
+            # 收集所有分数>=80的interest，并截断长文本
+            paper.high_score_interests = []
+            if scores_dict:
+                for interest, score in scores_dict.items():
+                    if score >= 80:
+                        truncated_interest = truncate_interest(interest)
+                        paper.high_score_interests.append(truncated_interest)
+                
+                # 设置总分数为最高分
+                paper.score = float(max(scores_dict.values()))
+            
+            return paper.score
             
     except Exception as e:
         logger.error(f"Few-shot scoring failed: {e}")
-        return 0.0
+        paper.score = 0.0
+        return paper.score
     
-    return 0.0
+    paper.score = 0.0
+    return paper.score

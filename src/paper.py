@@ -19,6 +19,8 @@ class ArxivPaper:
     def __init__(self,paper:arxiv.Result):
         self._paper = paper
         self.score = None
+        self.interest_scores = {}  # 存储每个interest的分数
+        self.high_score_interests = []  # 存储分数>=80的interest
     
     @property
     def title(self) -> str:
