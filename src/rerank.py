@@ -64,7 +64,7 @@ def calculate_paper_score(paper: ArxivPaper, interests: List[str]) -> float:
     Returns:
         最高相关性分数（0-100）
     """
-    from llm import get_llm
+    from .llm import get_llm
     llm = get_llm()
     
     # 少样本提示示例
