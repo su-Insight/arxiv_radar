@@ -56,11 +56,11 @@ def rerank_paper(papers: List[ArxivPaper], retriever_target: str, model: str = "
 
 def truncate_interest(interest: str, max_length: int = 40) -> str:
     """
-    截断interest文本，超过max_length长度的中间部分用省略号替换
+    截断interest文本，超过max_length长度的末尾用省略号替换
     
     Args:
         interest: 要截断的interest文本
-        max_length: 最大文本长度（默认20）
+        max_length: 最大文本长度（默认40个字符）
         
     Returns:
         截断后的interest文本
@@ -68,10 +68,8 @@ def truncate_interest(interest: str, max_length: int = 40) -> str:
     if len(interest) <= max_length:
         return interest
     
-    # 计算前后保留的字符数，确保总长度为max_length
-    front_length = (max_length - 1) // 2
-    back_length = max_length - front_length - 1
-    return interest[:front_length] + "…" + interest[-back_length:]
+    # 固定长度40个字符，超出部分在后面使用...隐藏
+    return interest[:max_length - 3] + "..."
 
 
 def calculate_paper_score(paper: ArxivPaper, interests: List[str]) -> float:
