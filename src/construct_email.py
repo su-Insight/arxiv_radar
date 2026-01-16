@@ -30,39 +30,12 @@ framework = """
     .full-star {
       vertical-align: middle;
     }
-    .filter-buttons {
-      text-align: right;
-      margin-bottom: 16px;
-      padding: 8px;
-      background-color: #f0f0f0;
-      border-radius: 8px;
-    }
-    .filter-btn {
-      display: inline-block;
-      text-decoration: none;
-      font-size: 14px; font-weight: bold;
-      color: #fff; background-color: #5bc0de;
-      padding: 8px 16px; border-radius: 4px;
-      margin-left: 8px;
-      cursor: pointer;
-      border: none;
-      outline: none;
-    }
-    .filter-btn.active {
-      background-color: #337ab7;
-    }
     .paper-block {
       margin-bottom: 16px;
     }
   </style>
 </head>
 <body>
-
-<!-- Domain filter buttons will be inserted here -->
-<div class="filter-buttons">
-  <button class="filter-btn active" onclick="filterByDomain('all')">All Domains</button>
-  <!-- Additional domain buttons will be generated dynamically -->
-</div>
 
 <div>
     __CONTENT__
@@ -72,28 +45,6 @@ framework = """
 <div>
 To unsubscribe, remove your email in your Github Action setting.
 </div>
-
-<script>
-function filterByDomain(domain) {
-  // Get all paper blocks
-  const paperBlocks = document.querySelectorAll('.paper-block');
-  
-  // Update button states
-  document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.classList.remove('active');
-  });
-  document.querySelector(`[onclick="filterByDomain('${domain}')"]`).classList.add('active');
-  
-  // Filter papers
-  paperBlocks.forEach(block => {
-    if (domain === 'all' || block.classList.contains(`domain-${domain}`)) {
-      block.style.display = 'block';
-    } else {
-      block.style.display = 'none';
-    }
-  });
-}
-</script>
 
 </body>
 </html>
@@ -183,23 +134,9 @@ def get_stars(score:float):
 
 
 def render_email(papers:list[ArxivPaper], interests:list[str]=None):
-    # Get unique domains from interests or default to empty list
-    domains = []
-    if interests:
-        domains = [interest.strip() for interest in interests if interest.strip()]
-    
-    # Generate domain filter buttons
-    domain_buttons = ''
-    for domain in domains:
-        # Replace spaces with underscores for CSS class
-        domain_class = domain.replace(' ', '_').replace('-', '_')
-        domain_buttons += f'<button class="filter-btn" onclick="filterByDomain(\'{domain_class}\')">{domain}</button>'
-    
     parts = []
     if len(papers) == 0 :
-        # Add domain buttons to empty state
-        framework_with_buttons = framework.replace('<!-- Additional domain buttons will be generated dynamically -->', domain_buttons)
-        return framework_with_buttons.replace('__CONTENT__', get_empty_html())
+        return framework.replace('__CONTENT__', get_empty_html())
     
     for p in tqdm(papers,desc='Rendering Email'):
         rate = get_stars(p.score)
@@ -218,22 +155,12 @@ def render_email(papers:list[ArxivPaper], interests:list[str]=None):
         else:
             affiliations = 'Unknown Affiliation'
         
-        # Get the domain classes for this paper
-        domain_classes = ''
-        if domains and hasattr(p, 'score') and p.score > 0:
-            # For now, we'll just add all domains - in a real implementation, you'd want to track which domain(s) the paper matched
-            for domain in domains:
-                domain_class = domain.replace(' ', '_').replace('-', '_')
-                domain_classes += f' domain-{domain_class}'
-        
         parts.append(get_block_html(p.title, authors, rate, p.score, p.arxiv_id, p.tldr, p.pdf_url, p.code_url, affiliations, p.high_score_interests))
         time.sleep(10)
 
     content = '<br>' + '</br><br>'.join(parts) + '</br>'
     
-    # Add domain buttons to framework
-    framework_with_buttons = framework.replace('<!-- Additional domain buttons will be generated dynamically -->', domain_buttons)
-    return framework_with_buttons.replace('__CONTENT__', content)
+    return framework.replace('__CONTENT__', content)
 
 def send_email(sender:str, receiver:str, password:str,smtp_server:str,smtp_port:int, html:str,):
     def _format_addr(s):
