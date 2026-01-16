@@ -33,6 +33,13 @@ framework = """
     .paper-block {
       margin-bottom: 16px;
     }
+    .interest-tag {
+      cursor: pointer;
+      transition: max-width 0.3s ease;
+    }
+    .interest-tag:hover {
+      max-width: 100% !important;
+    }
   </style>
 </head>
 <body>
@@ -45,6 +52,66 @@ framework = """
 <div>
 To unsubscribe, remove your email in your Github Action setting.
 </div>
+
+<script>
+// 自适应调整兴趣标签宽度的函数
+function adjustInterestTags() {
+  // 遍历所有论文区块
+  document.querySelectorAll('.paper-block').forEach(block => {
+    const relevanceRow = block.querySelector('tr:nth-child(3) td');
+    if (!relevanceRow) return;
+    
+    const interestTags = relevanceRow.querySelectorAll('.interest-tag');
+    if (interestTags.length === 0) return;
+    
+    // 获取相关性行的可用宽度（减去其他内容的宽度）
+    const relevanceText = relevanceRow.querySelector('strong');
+    const stars = relevanceRow.querySelector('.star-wrapper');
+    const scoreText = relevanceRow.querySelector('span:nth-child(3)');
+    
+    let otherContentWidth = 0;
+    if (relevanceText) otherContentWidth += relevanceText.offsetWidth;
+    if (stars) otherContentWidth += stars.offsetWidth;
+    if (scoreText) otherContentWidth += scoreText.offsetWidth;
+    
+    // 添加一些边距和间距
+    otherContentWidth += 40; // 边距和间距
+    
+    const rowWidth = relevanceRow.offsetWidth;
+    const availableWidth = rowWidth - otherContentWidth;
+    
+    if (availableWidth <= 0) return;
+    
+    // 计算每个标签的最大宽度
+    const minTagWidth = 50; // 每个标签的最小宽度
+    const maxTagWidth = 150; // 每个标签的最大宽度
+    
+    if (availableWidth / interestTags.length >= maxTagWidth) {
+      // 如果有足够的空间，每个标签都可以显示最大宽度
+      interestTags.forEach(tag => {
+        tag.style.maxWidth = maxTagWidth + 'px';
+      });
+    } else if (availableWidth / interestTags.length <= minTagWidth) {
+      // 如果空间不足，每个标签都显示最小宽度
+      interestTags.forEach(tag => {
+        tag.style.maxWidth = minTagWidth + 'px';
+      });
+    } else {
+      // 否则，平均分配可用空间
+      const avgWidth = Math.floor(availableWidth / interestTags.length);
+      interestTags.forEach(tag => {
+        tag.style.maxWidth = avgWidth + 'px';
+      });
+    }
+  });
+}
+
+// 页面加载完成后执行
+window.addEventListener('load', adjustInterestTags);
+
+// 窗口大小改变时重新调整
+window.addEventListener('resize', adjustInterestTags);
+</script>
 
 </body>
 </html>
@@ -69,7 +136,8 @@ def get_block_html(title:str, authors:str, rate:str, score:float,arxiv_id:str, a
     interest_tags = ''
     if high_score_interests and isinstance(high_score_interests, list):
         for interest in high_score_interests:
-            interest_tags += f'<span style="display: inline-block; background-color: #4CAF50; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-left: 8px;">{interest}</span>'
+            # 存储完整的兴趣文本在data属性中，用于自适应显示
+            interest_tags += f'<span class="interest-tag" data-full-interest="{interest}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-left: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">{interest}</span>'
     
     block_template = f"""
     <div class="paper-block">
