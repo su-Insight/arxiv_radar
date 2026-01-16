@@ -54,7 +54,7 @@ def rerank_paper(papers: List[ArxivPaper], retriever_target: str, model: str = "
     return sorted_papers
 
 
-def truncate_interest(interest: str, max_length: int = 20) -> str:
+def truncate_interest(interest: str, max_length: int = 40) -> str:
     """
     截断interest文本，超过max_length长度的中间部分用省略号替换
     
@@ -128,12 +128,14 @@ def calculate_paper_score(paper: ArxivPaper, interests: List[str]) -> float:
         {few_shot_context}
 
         ### [Current Task]
-        User Interests: {target_interests}
+        Current User Interests: {target_interests}
         Paper Title: {paper.title}
         Paper Abstract: {paper.summary[:1200]}
 
         ### [Requirement]
         - Return ONLY the JSON object.
+        - The keys in the JSON must EXACTLY match the provided "Current User Interests" list.
+        - Include EVERY interest from the list, even if the score is low. Do not add any extra categories.
         - Scores must be integers between 0 and 100.
         - Granularity Trigger: Avoid scores that are multiples of 5 (e.g., 70, 75, 80) to ensure higher ranking granularity
         - No explanation.
@@ -154,6 +156,8 @@ def calculate_paper_score(paper: ArxivPaper, interests: List[str]) -> float:
             
             # 更新paper对象的interest_scores属性
             paper.interest_scores = scores_dict
+
+            print(scores_dict)
             
             # 收集所有分数>=80的interest，并截断长文本
             paper.high_score_interests = []

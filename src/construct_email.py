@@ -137,7 +137,7 @@ def get_block_html(title:str, authors:str, rate:str, score:float,arxiv_id:str, a
     if high_score_interests and isinstance(high_score_interests, list):
         for interest in high_score_interests:
             # 存储完整的兴趣文本在data属性中，用于自适应显示
-            interest_tags += f'<span class="interest-tag" data-full-interest="{interest}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-left: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">{interest}</span>'
+            interest_tags += f'<span class="interest-tag" data-full-interest="{interest}" title="{interest}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-left: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">{interest}</span>'
     
     block_template = f"""
     <div class="paper-block">
