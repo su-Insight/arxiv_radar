@@ -103,14 +103,34 @@ def calculate_paper_score(paper: ArxivPaper, interests: List[str]) -> float:
     target_interests = json.dumps(interests)
     
     prompt = f"""
+        ### [Detailed Interest Analysis]
+        Please evaluate the paper based on these three specific dimensions (0-10 points each):
+        
+        1. Domain Overlap (0-10):
+           - Assess whether the research scope falls within the sub-fields defined in [RETRIEVER_TARGET].
+           - 0: Completely irrelevant; 10: Core domain is highly consistent.
+        
+        2. Problem Alignment (0-10):
+           - Does the specific problem addressed (e.g., efficiency, reliability, novelty, robustness) align with the user's primary concerns?
+           - Consider if the research motivation addresses practical pain points in the user's research or engineering workflows.
+        
+        3. Methodological Synergy (0-10):
+           - Does the technical approach (e.g., Reinforcement Learning, Chain-of-Thought, Edge Detection, Model Compression) match the user's technical stack?
+           - Even if the domain slightly diverges, check if the implementation provides direct reference or inspirational value.
+        
+        ### [Scoring Logic]
+        Final Score Calculation Formula:
+        $$Total Score = (Domain * 0.3 + Problem * 0.3 + Method * 0.4) * 10$$
+
+        ### [Example]
         {few_shot_context}
 
-        ### Current Task:
+        ### [Current Task]
         User Interests: {target_interests}
         Paper Title: {paper.title}
         Paper Abstract: {paper.summary[:1200]}
 
-        ### Requirement:
+        ### [Requirement]
         - Return ONLY the JSON object.
         - Scores must be integers between 0 and 100.
         - No explanation.
