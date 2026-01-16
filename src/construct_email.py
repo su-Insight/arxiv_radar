@@ -137,7 +137,7 @@ def get_block_html(title:str, authors:str, rate:str, score:float,arxiv_id:str, a
     </tr>
     <tr>
         <td style="font-size: 14px; color: #333; padding: 8px 0;">
-            <strong>Relevance:</strong> {rate} <span style="font-size: 12px; color: #888;">({score:.1f}/100)</span>{interest_tags}
+            <strong>Relevance:</strong> {rate} <span style="font-size: 12px; color: #888;">({score:.0f}/100)</span>{interest_tags}
         </td>
     </tr>
     <tr>
