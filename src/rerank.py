@@ -135,7 +135,7 @@ def calculate_paper_score(paper: ArxivPaper, interests: List[str]) -> float:
         ### [Requirement]
         - Return ONLY the JSON object.
         - Scores must be integers between 0 and 100.
-        - Granularity Trigger: Avoid scores that are multiples of 5 (e.g., 70, 75, 80) to ensure higher ranking granularity. Prefer specific, nuanced values such as 72, 78, 83, or 89.
+        - Granularity Trigger: Avoid scores that are multiples of 5 (e.g., 70, 75, 80) to ensure higher ranking granularity
         - No explanation.
 
         Output:"""
