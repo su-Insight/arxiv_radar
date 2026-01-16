@@ -112,6 +112,7 @@ if __name__ == '__main__':
     parser.add_argument('--debug', action='store_true', help='Debug mode')
     args = parser.parse_args()
 
+    print(args)
 
     assert (
         not args.use_llm_api or args.openai_api_key is not None
