@@ -1,84 +1,148 @@
-## 🧪 调试与测试
+# ArXiv Radar
 
-### 测试工作流
-我们提供了一个专门的 **Test-Workflow Action**，用于快速测试配置是否正确：
-- 无论日期如何，始终检索5篇ArXiv论文
-- 适合调试配置和查看邮件格式
-- 不影响日常自动运行的主工作流
+[中文版本 (Chinese Version)](README_zh.md)
 
-### 主工作流
-- **自动触发**：每天自动运行，检索前一天发布的新论文
-- **运行时间**：默认在UTC时间22:00执行
-- **自定义时间**：可通过编辑 `.github/workflows/main.yml` 文件修改运行时间
-- **周末和节假日**：这些时间段ArXiv通常不发布新论文，可能会在日志中看到"未找到新论文"的提示
+ArXiv Radar是一个自动化工具，用于每日从ArXiv检索最新论文，使用本地LLM解析摘要，计算与用户定义关键字的相似度，并将最相关的前K篇论文通过邮件发送给用户。
 
-## 💻 本地运行
+## 功能特点
 
-如果您希望在本地运行此工具，可以使用uv包管理器（推荐）：
+- 📚 **每日更新**：自动从ArXiv获取过去24小时内的最新论文
+- 🔍 **智能检索**：支持多关键字/短语检索，可选择ArXiv分类
+- 🧠 **本地LLM**：使用本地部署的LLM解析和理解论文摘要，保护隐私
+- ⚡ **相似度计算**：基于余弦相似度算法筛选最相关的论文
+- 📧 **邮件推送**：将筛选后的论文列表发送到指定邮箱
+- ⏰ **定时执行**：可配置的每日执行时间
+- 📁 **轻量级设计**：仅包含4个核心文件，易于部署和使用
 
-```bash
-# 设置环境变量
-export ARXIV_QUERY=cs.AI+cs.CV+cs.LG
-export SMTP_SERVER=smtp.example.com
-# ... 设置其他必要的环境变量
+## 项目结构
 
-# 运行项目
-cd arxiv_radar
-uv run main.py
+```
+arxiv_radar/
+├── main.py                  # Main program file containing all core logic
+├── src/
+│   ├── llm.py              # LLM-related functions and utilities
+│   ├── paper.py            # Paper data structure and ArXiv API interactions
+│   ├── rerank.py           # Paper reranking logic using LLM
+│   └── construct_email.py  # Email construction and sending functions
+├── requirements.txt         # Dependencies list
+├── README.md               # Project documentation (English)
+├── README_zh.md            # Project documentation (Chinese)
+└── .github/
+    └── workflows/          # GitHub Actions workflows
+        └── main.yml        # Daily execution workflow
 ```
 
-> ⚠️ **注意**：其他包管理器（如pip或conda）未经过全面测试，可能存在潜在问题。虽然项目包含pyproject.toml文件，但建议优先使用uv以获得最佳体验。
+## 安装步骤
 
-## 📦 LLM资源需求
+### 1. 环境要求
 
-- 系统将自动下载并运行 **Qwen2.5-3B** 模型（约3GB大小）
-- 请确保您的网络连接稳定，能够下载该模型
-- 硬件需满足模型运行需求（至少8GB内存）
+- Python 3.7+
+- Sufficient disk space (for storing LLM models, approximately 100MB-2GB depending on model size)
 
-## 🔄 保持同步
+### 2. 安装依赖
 
-项目处于**活跃开发**状态，建议您：
-1. **Watch** 此仓库以获取最新发布通知
-2. 定期更新您的fork仓库以享受新功能和bug修复
+```bash
+# Install project dependencies
+pip install -r requirements.txt
+```
 
-## 🧠 工作原理
+## 配置
 
-ArXiv Radar的工作流程分为以下几个步骤：
+### 1. GitHub Actions Secrets and Variables
 
-1. **数据收集**：从ArXiv检索最新论文
-2. **兴趣匹配**：使用本地LLM分析论文摘要与您定义兴趣的相关性
-3. **排序**：根据相关性分数对论文进行排序
-4. **摘要生成**：使用轻量级LLM为每篇论文生成TL;DR
-5. **邮件发送**：将排序后的论文列表发送到您的邮箱
+Configure the following secrets and variables in your GitHub repository:
 
-## ⚠️ 已知限制
+**Secrets:**
+- `ARXIV_QUERY`: ArXiv search query
+- `SMTP_SERVER`: SMTP server address
+- `SMTP_PORT`: SMTP server port
+- `SENDER`: Sender email address
+- `RECEIVER`: Receiver email address
+- `SENDER_PASSWORD`: Sender email password
+- `USE_LLM_API`: Whether to use OpenAI API (true/false)
+- `OPENAI_API_KEY`: OpenAI API key (required if USE_LLM_API is true)
+- `OPENAI_API_BASE`: OpenAI API base URL (optional)
+- `MODEL_NAME`: OpenAI model name (optional, default: gpt-4o)
 
-1. **推荐算法**：当前的相关性计算基于简单的相似度算法，可能无法完全准确地反映您的兴趣偏好
-2. **执行时间**：在GitHub Actions上部署LLM并为每篇论文生成摘要需要一定时间（约70秒/篇）
-3. **资源限制**：GitHub Actions有执行时间限制（公共仓库每执行6小时，每月2000分钟），过高的MAX_PAPER_NUM可能导致超出限制
+**Variables:**
+- `REPOSITORY`: Repository name (default: your GitHub username/arxiv_radar)
+- `REF`: Branch name (default: main)
+- `SEND_EMPTY`: Whether to send empty email when no papers found (true/false)
+- `MAX_PAPER_NUM`: Maximum number of papers to recommend
+- `RETRIEVER_TARGET`: Interest domains, one per line
+- `LANGUAGE`: Language for TLDR generation (default: English)
 
-## 🤝 贡献指南
+## Usage
 
-欢迎提交Issue和Pull Request！我们鼓励：
-- 改进推荐算法
-- 添加新功能
-- 修复bug
-- 优化文档
+### Run Locally
 
-> 💡 **提示**：所有Pull Request请合并到dev分支
+```bash
+python main.py
+```
 
-## 📄 许可证
+### GitHub Actions (Recommended)
 
-项目采用 **MIT许可证** 分发，详情请参阅[LICENSE](LICENSE)文件。
+1. Fork this repository
+2. Configure secrets and variables as described above
+3. The workflow will run automatically daily at the scheduled time
 
-## 🙏 致谢
+## Troubleshooting
 
-感谢以下项目和工具的支持：
-- [arxiv](https://github.com/lukasschwab/arxiv.py) - ArXiv API客户端
-- [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) - 本地LLM支持
-- [sentence-transformers](https://github.com/UKPLab/sentence-transformers) - 文本嵌入生成
-- [GitHub Actions](https://github.com/features/actions) - 自动化工作流支持
+### 1. Failed to connect to SMTP server
+
+**Solutions:**
+- Check SMTP server address and port correctness
+- Ensure TLS/SSL encryption is properly configured
+- Verify email username and password
+- For Gmail users, enable "Less secure app access" or use app-specific passwords
+
+### 2. Model loading failure
+
+**Solutions:**
+- Check network connection to ensure model can be downloaded
+- Try using a smaller model
+- Manually download the model and specify local path
+
+### 3. No relevant papers found
+
+**Solutions:**
+- Check keyword correctness, try using broader keywords
+- Reduce ArXiv category restrictions
+- Increase `MAX_PAPER_NUM` parameter value
+
+### 4. Slow execution
+
+**Solutions:**
+- Use a smaller LLM model
+- Reduce `MAX_PAPER_NUM` parameter value
+- Consider running in an environment with GPU (sentence-transformers supports GPU acceleration)
+
+## Technology Stack
+
+- **Python 3.7+**: Main development language
+- **arxiv**: ArXiv API client
+- **llama_cpp**: Local LLM integration
+- **openai**: OpenAI API integration (optional)
+- **sentence-transformers**: Text embedding generation
+- **scikit-learn**: Similarity calculation
+- **schedule**: Scheduled task management
+- **smtplib**: Email sending
+- **GitHub Actions**: Continuous integration and deployment
+
+## License
+
+MIT License
+
+## Contributing
+
+Issue and Pull Request are welcome!
+
+## Changelog
+
+### v1.0.0 (2024-01-15)
+- Initial version release
+- Implemented core features: ArXiv retrieval, local LLM parsing, similarity calculation, email sending, and scheduled execution
 
 ---
 
-**开始使用ArXiv Radar，让最新的研究成果自动找到您！** 🚀
+**Note**: When running for the first time, the program will automatically download the specified LLM model to the local `./models` directory. Ensure network connection is available.
