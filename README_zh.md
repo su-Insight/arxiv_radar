@@ -4,6 +4,12 @@
 </p>
 <h3 align="center">ArXiv Radar</h3>
 
+
+<p align="center">
+  <a href="README.md">English</a> | <a href="README_zh.md">简体中文</a>
+</p>
+
+
 <div align="center">
 
   ![Status](https://img.shields.io/badge/status-active-success.svg)
@@ -76,14 +82,14 @@
 
 | 变量名 | 必填 | 类型 | 描述 | 示例 |
 | :--- | :---: | :--- | :--- | :--- |
-| ARXIV_QUERY | ✅ | str | 检索的 ArXiv 分类，用 `+` 连接，[明细详见](https://arxiv.org/category_taxonomy)。 | cs.AI+cs.CV+cs.LG |
-| SMTP_SERVER | ✅ | str | 发送端邮箱的 SMTP 服务器。 | smtp.qq.com |
-| SMTP_PORT | ✅ | int | SMTP 端口（SSL 推荐 465）。 | 465 |
+| ARXIV_QUERY | ✅ | str | 检索的 ArXiv 分类，检索多个领域用 `+` 连接，[明细详见](https://arxiv.org/category_taxonomy) | cs.AI+cs.CV+cs.LG |
+| SMTP_SERVER | ✅ | str | 发送端邮箱的 SMTP 服务器 | smtp.qq.com |
+| SMTP_PORT | ✅ | int | SMTP 端口（SSL 推荐 465） | 465 |
 | SENDER | ✅ | str | 发送端邮箱账号。 | researcher@qq.com |
-| SENDER_PASSWORD | ✅ | str | 邮箱授权码（非登录密码）。 | abcdefghijklmnop |
-| RECEIVER | ✅ | str | 接收论文列表的邮箱。 | target@outlook.com |
-| USE_LLM_API | | bool | 是否使用云端 API (默认为 False)。 | False |
-| OPENAI_API_KEY | | str | API Key (若使用 API 则必填)。 | sk-xxxxxxxx |
+| SENDER_PASSWORD | ✅ | str | 邮箱授权码（非登录密码） | abcdefghijklmnop |
+| RECEIVER | ✅ | str | 接收论文列表的邮箱 | target@outlook.com |
+| USE_LLM_API | | bool | 是否使用云端 API (默认为 False) | False |
+| OPENAI_API_KEY | | str | API Key (若使用 API 则必填) | sk-xxxxxxxx |
 > SMTP的申请直接在网页搜索对应邮箱+SMTP即可
 3. **设置 Repository Variables** (公开变量，方便随时修改)：
 
@@ -98,10 +104,10 @@
 
 | 变量名 | 必填 | 类型 | 描述 | 示例 |
 | :--- | :--- | :--- | :--- | :--- |
-| RETRIEVER_TARGET | ✅ | str | **核心兴趣定义**，每行一个。 | 见下文示例 |
-| MAX_PAPER_NUM | | int | 邮件展示的最大论文数量（默认 100）。 | 20 |
+| RETRIEVER_TARGET | ✅ | str | **核心兴趣定义**，每行一个，可以是关键字或短句，建议使用英文 | 见下文示例 |
+| MAX_PAPER_NUM | | int | 邮件展示的最大论文数量（默认 100） | 20 |
 | LANGUAGE | | str | TLDR 生成的语言(默认为English) | Chinese |
-| SEND_EMPTY | | bool | 若当日无匹配论文是否发送空邮件。 | False |
+| SEND_EMPTY | | bool | 若当日无匹配论文是否发送空邮件 | False |
 
 ### 🧠 兴趣定义 (RETRIEVER_TARGET) 最佳实践
 
@@ -127,8 +133,8 @@ Edge Detection
 
 | Key | Required | 描述 | 示例 |
 | :--- | :---: | :--- | :--- |
-| **REPOSITORY** | ✅ | 提供工作流源码的仓库。设置后将自动拉取最新代码。 | `su-Insight/arxiv-radar` |
-| **REF** | ✅ | 指定运行的代码分支（`main` 为稳定版，`dev` 为先行版）。 | `main` |
+| **REPOSITORY** | ✅ | 提供工作流源码的仓库。设置后将自动拉取最新代码 | `su-Insight/arxiv-radar` |
+| **REF** | ✅ | 指定运行的代码分支（`main` 为稳定版，`dev` 为先行版） | `main` |
 
 ---
 
