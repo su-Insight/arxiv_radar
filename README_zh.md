@@ -20,6 +20,10 @@
 
 </div>
 
+<p align="center">
+  <a href="README.md">English</a> | <a href="README_zh.md">简体中文</a>
+</p>
+
 <p align="center"> 🚀 每日根据您的科研兴趣，利用本地 LLM 智能检索、语义重排并推送 ArXiv 最新论文。
     <br> 
 </p>
@@ -49,7 +53,7 @@
 
 <div align="left">
   
-| <img width="882" height="697" alt="image" src="https://github.com/user-attachments/assets/a4ded5b7-b673-4e7c-a882-1c2ef2f47a21" /> |
+| <img width="1782" height="1357" alt="image" src="https://github.com/user-attachments/assets/a4ded5b7-b673-4e7c-a882-1c2ef2f47a21" /> |
 | :---: |
 
 </div>
@@ -140,7 +144,6 @@ Edge Detection
 
 ---
 
-
 ## 🧪 测试与验证 (Testing) <a name = "testing"></a>
 
 在正式开始每日自动推送之前，您可以通过手动触发测试工作流来验证配置是否成功：
@@ -149,9 +152,10 @@ Edge Detection
 2. 在左侧列表中选择 **`Test-Daily Paper Sender`**。
 3. 点击右侧的 **`Run workflow`** 下拉菜单，点击绿色的 **`Run workflow`** 按钮。
 
+
 <div align="left">
   
-| <img width="893" height="247" alt="image" src="https://github.com/user-attachments/assets/39254b38-5298-4d9b-b82f-3a06b5707a66" /> |
+| <img width="893" height="247" alt="image" src="https://github.com/user-attachments/assets/7aba0dc4-d1d8-413c-9d22-c77f2d8da110" /> |
 | :---: |
 
 </div>
